@@ -6,17 +6,26 @@ type Response[T any] struct {
 	Data    *T     `json:"data"`
 }
 
-func ResponseError(message string) Response[string] {
+func ResponseError(message string, code ...int) Response[string] {
+	defaultCode := 99
+	if len(code) > 0 {
+		defaultCode = code[0]
+	}
 	return Response[string]{
-		Code:    99,
+		Code:    defaultCode,
 		Message: message,
 		Data:    nil,
 	}
 }
 
-func ResponseErrorData(message string, data *map[string]string) Response[map[string]string] {
+func ResponseErrorData(message string, data *map[string]string, code ...int) Response[map[string]string] {
+	defaultCode := 99
+	if len(code) > 0 {
+		defaultCode = code[0]
+	}
+
 	return Response[map[string]string]{
-		Code:    99,
+		Code:    defaultCode,
 		Message: message,
 		Data:    data,
 	}

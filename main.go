@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/harrymuliawan03/go-rest-api/dto"
@@ -25,18 +27,20 @@ func main() {
 		},
 	})
 
-	customerRepository := repository.NewCustomer(dbConnection)
-	customerService := service.NewCustomer(customerRepository)
-
 	bookRepository := repository.NewBook(dbConnection)
-	bookService := service.NewBook(bookRepository)
-
+	bookStockRepository := repository.NewBookStock(dbConnection)
+	customerRepository := repository.NewCustomer(dbConnection)
 	userRepository := repository.NewUser(dbConnection)
+
+	bookService := service.NewBook(bookRepository, bookStockRepository)
+	bookStockService := service.NewBookStock(bookStockRepository, bookRepository)
+	customerService := service.NewCustomer(customerRepository)
 	authService := service.NewAuth(cnf, userRepository)
 
 	api.NewCustomer(app, customerService, jwtMidd)
 	api.NewBook(app, bookService, jwtMidd)
+	api.NewBookStock(app, bookStockService, jwtMidd)
 	api.NewAuth(app, authService)
 
-	_ = app.Listen(":" + cnf.Server.Port)
+	log.Fatal(app.Listen(":" + cnf.Server.Port))
 }

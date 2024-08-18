@@ -32,7 +32,7 @@ func (a AuthService) Login(ctx context.Context, req dto.AuthRequest) (dto.AuthRe
 	}
 
 	if user.Id == "" {
-		return dto.AuthResponse{}, errors.New("User not found")
+		return dto.AuthResponse{}, domain.NewNotFoundError("User")
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {

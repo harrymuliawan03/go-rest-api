@@ -50,7 +50,7 @@ func (ba *bookApi) Show(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(dto.ResponseError("Book not found"))
 	}
 
-	return ctx.Status(http.StatusOK).JSON(dto.ResponseSuccess("Succesfully get book", res))
+	return ctx.Status(http.StatusOK).JSON(dto.ResponseSuccess("Succesfully get book", &res))
 }
 
 func (ba *bookApi) Create(ctx *fiber.Ctx) error {

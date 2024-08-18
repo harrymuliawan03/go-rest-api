@@ -24,6 +24,11 @@ func translate(fe validator.FieldError) string {
 		return fmt.Sprintf("Field %s is required", fe.StructField())
 	case "email":
 		return fmt.Sprintf("Field %s is not valid email", fe.StructField())
+	case "unique":
+		return fmt.Sprintf("Field %s must be unique", fe.StructField())
+	case "min":
+		return fmt.Sprintf("Field %s size minimum %s", fe.StructField(), fe.Param())
 	}
+
 	return "Validation failed"
 }

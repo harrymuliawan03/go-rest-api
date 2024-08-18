@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,12 +11,14 @@ import (
 )
 
 type BookService struct {
-	bookRepository domain.BookRepository
+	bookRepository      domain.BookRepository
+	bookStockRepository domain.BookStockRepository
 }
 
-func NewBook(br domain.BookRepository) domain.BookService {
+func NewBook(br domain.BookRepository, bsr domain.BookStockRepository) domain.BookService {
 	return &BookService{
-		bookRepository: br,
+		bookRepository:      br,
+		bookStockRepository: bsr,
 	}
 }
 
@@ -63,21 +64,38 @@ func (b *BookService) Delete(ctx context.Context, id string) error {
 	}
 
 	if persisted.Id == "" {
-		return errors.New("Book not found")
+		return domain.NewNotFoundError("Book")
 	}
 
 	return b.bookRepository.Delete(ctx, id)
 }
 
 // Show implements domain.BookService.
-func (b *BookService) Show(ctx context.Context, id string) (bd *dto.BookData, er error) {
+func (b *BookService) Show(ctx context.Context, id string) (dto.BookShowData, error) {
 	book, err := b.bookRepository.FindById(ctx, id)
 
 	if err != nil {
-		return &dto.BookData{}, err
+		return dto.BookShowData{}, err
 	}
 
-	return &dto.BookData{Id: book.Id, Title: book.Title, Description: book.Description, Isbn: book.Isbn}, nil
+	stocks, err := b.bookStockRepository.FindByBookId(ctx, id)
+	if err != nil {
+		return dto.BookShowData{}, err
+	}
+
+	stocksData := make([]dto.BookStockData, 0)
+
+	for _, v := range stocks {
+		stocksData = append(stocksData, dto.BookStockData{
+			Code:   v.Code,
+			Status: v.Status,
+		})
+	}
+
+	return dto.BookShowData{
+		BookData: dto.BookData{Id: book.Id, Title: book.Title, Description: book.Description, Isbn: book.Isbn},
+		Stocks:   stocksData,
+	}, nil
 }
 
 // Update implements domain.BookService.
@@ -89,7 +107,7 @@ func (b *BookService) Update(ctx context.Context, req dto.UpdateBookRequest) err
 	}
 
 	if persisted.Id == "" {
-		return errors.New("Book not found")
+		return domain.NewNotFoundError("Book")
 	}
 
 	persisted.Title = req.Title

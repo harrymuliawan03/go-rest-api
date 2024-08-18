@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"strconv"
 	"time"
 
@@ -62,7 +61,7 @@ func (c *customerService) Update(ctx context.Context, req dto.UpdateCustomerRequ
 	}
 
 	if persisted.Id == "" {
-		return errors.New("customer not found")
+		return domain.NewNotFoundError("Customer")
 	}
 	persisted.Code = req.Code
 	persisted.Name = req.Name
@@ -78,7 +77,7 @@ func (c *customerService) Delete(ctx context.Context, id string) error {
 	}
 
 	if persisted.Id == "" {
-		return errors.New("Customer not found")
+		return domain.NewNotFoundError("Customer")
 	}
 
 	return c.customerRepository.Delete(ctx, id)
@@ -88,7 +87,7 @@ func (c *customerService) Show(ctx context.Context, id string) (cd *dto.Customer
 	persisted, err := c.customerRepository.FindById(ctx, id)
 
 	if persisted.Id == "" {
-		err = errors.New("Customer not found")
+		err = domain.NewNotFoundError("Customer")
 	} else {
 		cd = &dto.CustomerData{
 			Id:   persisted.Id,
